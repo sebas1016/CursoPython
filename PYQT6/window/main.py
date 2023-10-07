@@ -88,11 +88,12 @@ class MainWindow(QMainWindow):
         initial_dir = QStandardPaths.writableLocation(QStandardPaths.StandardLocation.DesktopLocation)
         file_types = "Text Files(*.txt);;Imagenes (*.png);; All files (*);; HTML Files (*.html)"
         self.file , _ = QFileDialog.getOpenFileName(self,"Open File",initial_dir,file_types)
-        
-        with open(self.file, 'r') as file:
-            self.setWindowTitle(f"QMainWindow - {self.file}")
-            self.editor_text.setText(file.read())
-        #Mostrar Texto
+        try:
+            with open(self.file, 'r') as file:
+                self.setWindowTitle(f"QMainWindow - {self.file}")
+                self.editor_text.setText(file.read())
+        except(FileNotFoundError) as e:
+            print(f"No se encontro el archivo {e}")
         
     def save(self):
         initial_dir = QStandardPaths.writableLocation(QStandardPaths.StandardLocation.DesktopLocation)
