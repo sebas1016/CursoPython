@@ -79,7 +79,6 @@ class MainWindow(QMainWindow):
         self.open_folder_music_action.setStatusTip("Abre tu carpeta de musica")
         self.open_folder_music_action.triggered.connect(self.open_folder_music)
         
-        
     def create_menu(self):
         self.menuBar()
         menu_file = self.menuBar().addMenu("File")
@@ -112,14 +111,7 @@ class MainWindow(QMainWindow):
                 item.setIcon(icon)
                 self.songs_list.addItem(item)
                 
-        
-        
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     window = MainWindow()
     sys.exit(app.exec())
-            
-        
-        
-        
-        
