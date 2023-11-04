@@ -13,10 +13,14 @@ class MainWindow(QMainWindow):
         self.inicializarUI()
         self.status_bar = QStatusBar()
         self.setStatusBar(self.status_bar)
+        with open('Reproductor/estilos.css','r') as file:
+            style = file.read()
+        self.setStyleSheet(style)
     
     def inicializarUI(self):
-        self.setGeometry(100,100,800,500)
+        self.setGeometry(250,30,800,350)
         self.setWindowTitle("Reproductor de musica")
+        self.setWindowIcon(QIcon('Reproductor/images/iconn.ico'))
         self.generateMainWindow()
         self.create_dock()
         self.create_action()
@@ -46,16 +50,26 @@ class MainWindow(QMainWindow):
         buttons_cointainer = QWidget()
         
         song_image = QLabel()
-        pixmap = QPixmap("PYQT6/Reproductor/images/song_image.png")
+        pixmap = QPixmap("Reproductor/images/song_image.png").scaled(512, 512)
         song_image.setPixmap(pixmap)
         song_image.setScaledContents(True)
         
-        button_repeat = QPushButton("Repeat")
-        button_before = QPushButton("Before")
-        button_play = QPushButton("Play")
-        button_next = QPushButton("next")
-        button_random = QPushButton("Random")
-        
+        button_repeat = QPushButton()
+        button_repeat.setObjectName("button_repeat")
+        button_before = QPushButton()
+        button_before.setObjectName("button_before")
+        button_play = QPushButton()
+        button_play.setObjectName("button_play")
+        button_next = QPushButton()
+        button_next.setObjectName("button_next")
+        button_random = QPushButton()
+        button_random.setObjectName("button_random")
+        button_repeat.setFixedSize(40,40)
+        button_before.setFixedSize(40,40)
+        button_play.setFixedSize(50,50)
+        button_next.setFixedSize(40,40)
+        button_random.setFixedSize(40,40)
+
         button_h_box.addWidget(button_repeat)
         button_h_box.addWidget(button_before)
         button_h_box.addWidget(button_play)
@@ -103,7 +117,7 @@ class MainWindow(QMainWindow):
     def open_folder_music(self):
         initial_dir = QStandardPaths.writableLocation(QStandardPaths.StandardLocation.MusicLocation)
         selected_folder = QFileDialog.getExistingDirectory(None, "Selecciona una carpeta", initial_dir)
-        icon = QIcon("PYQT6\Reproductor\images\mp3.ico")
+        icon = QIcon("Reproductor/images/mp3.ico")
         for archivo in os.listdir(selected_folder):
             ruta_archivo = os.path.join(selected_folder,archivo)
             if ruta_archivo.endswith(".mp3"):
@@ -114,4 +128,9 @@ class MainWindow(QMainWindow):
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     window = MainWindow()
+<<<<<<< HEAD
     sys.exit(app.exec())
+=======
+    sys.exit(app.exec())
+            
+>>>>>>> 397d6a5 (Estilos reproductor)
