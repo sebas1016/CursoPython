@@ -3,20 +3,28 @@ import os
 from PyQt6.QtWidgets import (QApplication,QStatusBar,QLabel,QStatusBar, QMainWindow, QPushButton,
                              QDockWidget,QTabWidget,QWidget,QHBoxLayout,QVBoxLayout,
                              QListWidget,QFileDialog,QListWidgetItem)
-from PyQt6.QtCore import (Qt, QStandardPaths)
+from PyQt6.QtMultimedia import (QMediaPlayer, QAudioOutput)
+from PyQt6.QtCore import (Qt, QStandardPaths,QUrl,QModelIndex)
 from PyQt6.QtGui import (QPixmap, QAction, QKeySequence,QIcon)
+
 
 class MainWindow(QMainWindow):
     
     def __init__(self):
         super().__init__()
-        self.inicializarUI()
         self.status_bar = QStatusBar()
         self.setStatusBar(self.status_bar)
+        self.current_music_folder = ""
         with open('Reproductor/estilos.css','r') as file:
             style = file.read()
         self.setStyleSheet(style)
-    
+        self.player = QMediaPlayer()
+        self.playing_reproductor = True
+        self.nexted_song = False
+        self.inicializarUI()
+        self.selected_item_index = self.songs_list.currentRow()
+        #self.songs_list.itemDoubleClicked.connect(self.handle_song_selection) 
+        
     def inicializarUI(self):
         self.setGeometry(250,30,800,350)
         self.setWindowTitle("Reproductor de musica")
@@ -25,6 +33,7 @@ class MainWindow(QMainWindow):
         self.create_dock()
         self.create_action()
         self.create_menu()
+        self.load_songs()
         self.show()
     
     def generateMainWindow(self):
@@ -54,27 +63,29 @@ class MainWindow(QMainWindow):
         song_image.setPixmap(pixmap)
         song_image.setScaledContents(True)
         
-        button_repeat = QPushButton()
-        button_repeat.setObjectName("button_repeat")
-        button_before = QPushButton()
-        button_before.setObjectName("button_before")
-        button_play = QPushButton()
-        button_play.setObjectName("button_play")
-        button_next = QPushButton()
-        button_next.setObjectName("button_next")
-        button_random = QPushButton()
-        button_random.setObjectName("button_random")
-        button_repeat.setFixedSize(40,40)
-        button_before.setFixedSize(40,40)
-        button_play.setFixedSize(50,50)
-        button_next.setFixedSize(40,40)
-        button_random.setFixedSize(40,40)
+        self.button_repeat = QPushButton()
+        self.button_repeat.setObjectName("button_repeat")
+        self.button_before = QPushButton()
+        self.button_before.setObjectName("button_before")
+        self.button_play = QPushButton()
+        self.button_play.setObjectName("button_play")
+        self.button_play.clicked.connect(self.play_pause_song)
+        self.button_next = QPushButton()
+        self.button_next.setObjectName("button_next")
+        self.button_next.clicked.connect(self.next_song)
+        self.button_random = QPushButton()
+        self.button_random.setObjectName("button_random")
+        self.button_repeat.setFixedSize(40,40)
+        self.button_before.setFixedSize(40,40)
+        self.button_play.setFixedSize(50,50)
+        self.button_next.setFixedSize(40,40)
+        self.button_random.setFixedSize(40,40)
 
-        button_h_box.addWidget(button_repeat)
-        button_h_box.addWidget(button_before)
-        button_h_box.addWidget(button_play)
-        button_h_box.addWidget(button_next)
-        button_h_box.addWidget(button_random)
+        button_h_box.addWidget(self.button_repeat)
+        button_h_box.addWidget(self.button_before)
+        button_h_box.addWidget(self.button_play)
+        button_h_box.addWidget(self.button_next)
+        button_h_box.addWidget(self.button_random)
         
         buttons_cointainer.setLayout(button_h_box)
         main_V_box.addWidget(song_image)
@@ -105,6 +116,7 @@ class MainWindow(QMainWindow):
         self.dock = QDockWidget()
         self.dock.setWindowTitle("Lista de canciones")
         self.dock.setAllowedAreas(Qt.DockWidgetArea.LeftDockWidgetArea | Qt.DockWidgetArea.RightDockWidgetArea)
+        self.songs_list.itemSelectionChanged.connect(self.handle_song_selection)
         self.dock.setWidget(self.songs_list)
         self.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea,self.dock)
         
@@ -115,22 +127,104 @@ class MainWindow(QMainWindow):
             self.dock.hide()
             
     def open_folder_music(self):
+        self.songs_list.clear()
         initial_dir = QStandardPaths.writableLocation(QStandardPaths.StandardLocation.MusicLocation)
-        selected_folder = QFileDialog.getExistingDirectory(None, "Selecciona una carpeta", initial_dir)
+        self.current_music_folder = QFileDialog.getExistingDirectory(None, "Selecciona una carpeta", initial_dir)
+        print(self.current_music_folder)
         icon = QIcon("Reproductor/images/mp3.ico")
-        for archivo in os.listdir(selected_folder):
-            ruta_archivo = os.path.join(selected_folder,archivo)
-            if ruta_archivo.endswith(".mp3"):
-                item = QListWidgetItem(archivo)
-                item.setIcon(icon)
-                self.songs_list.addItem(item)
+        try:
+            for archivo in os.listdir(self.current_music_folder):
+                ruta_archivo = os.path.join(self.current_music_folder,archivo)
+                if ruta_archivo.endswith(".mp3"):
+                    item = QListWidgetItem(archivo)
+                    item.setIcon(icon)
+                    self.songs_list.addItem(item)
+        except(FileNotFoundError) as e:
+            print(f"No se encontro el archivo {e}")
+            
+    def load_songs(self):
+        self.current_music_folder = QStandardPaths.writableLocation(QStandardPaths.StandardLocation.MusicLocation)
+        print(self.current_music_folder)
+        try:
+            icon = QIcon("Reproductor/images/mp3.ico")
+            for archivo in os.listdir(self.current_music_folder):
+                ruta_archivo = os.path.join(self.current_music_folder,archivo)
+                if ruta_archivo.endswith(".mp3"):
+                    item = QListWidgetItem(archivo)
+                    item.setIcon(icon)
+                    self.songs_list.addItem(item)
+                    
+        except(FileNotFoundError) as e:
+            print(f"No se encontro el archivo {e}") 
+        
+                       
+    def create_player(self):
+        if self.player:
+            self.player.deleteLater()
+        self.player = QMediaPlayer()
+        self.audioOuput = QAudioOutput()
+        self.player.setAudioOutput(self.audioOuput)
+        self.player.mediaStatusChanged.connect(self.mediaStatusChange)
+        self.audioOuput.setVolume(1.0)
+        
+    #SLOT HANDLE
+    def play_pause_song(self):
+        if self.playing_reproductor:
+            self.button_play.setStyleSheet("image: url(Reproductor/images/pausa.png)")
+            self.player.pause()
+            self.playing_reproductor = False
+        else:
+            self.button_play.setStyleSheet("image: url(Reproductor/images/jugar.png)")
+            self.player.play()
+            self.playing_reproductor = True
+    
+    def next_song(self):
+        selected_item_index = self.get_current_playing_index()
+        print(selected_item_index)
+        if self.songs_list.count() > 0:
+            self.next_index = selected_item_index+1
+            if self.next_index == (self.songs_list.count()):
+                self.next_index = 0
+                print(self.next_index)
+            print(self.next_index)
+            selected_item = self.songs_list.item(self.next_index)
+            song_name = selected_item.text()
+            song_folder_path = os.path.join(self.current_music_folder, song_name)
+            self.create_player()
+            source = QUrl.fromLocalFile(song_folder_path)
+            self.player.setSource(source)
+            self.player.play()  
+        else:
+            print("No hay canciones en la lista")   
+                   
+    def get_current_playing_index(self):
+        current_media_url = self.player.source().path()
+        current_song_path = QUrl(current_media_url).toLocalFile()
+
+        for index in range(self.songs_list.count()):
+            item = self.songs_list.item(index)
+            song_path = os.path.join(self.current_music_folder, item.text())
+            if song_path == current_song_path:
+                return index
+
+        return -1  # Retorna -1 si no se encuentra la canción en la lista        
+    def mediaStatusChange(self,status):
+        print('Status: ',status)
+        if status == QMediaPlayer.MediaStatus.LoadedMedia:
+            self.player.play()
+            
+            
+    def handle_song_selection(self):
+        selected_item = self.songs_list.currentItem()
+        if selected_item:
+            song_name = selected_item.data(0)
+            song_folder_path = os.path.join(self.current_music_folder, song_name)
+            self.create_player()
+            source = QUrl.fromLocalFile(song_folder_path)
+            self.player.setSource(source)
+            
                 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     window = MainWindow()
-<<<<<<< HEAD
     sys.exit(app.exec())
-=======
-    sys.exit(app.exec())
-            
->>>>>>> 397d6a5 (Estilos reproductor)
