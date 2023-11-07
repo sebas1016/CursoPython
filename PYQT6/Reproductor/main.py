@@ -22,8 +22,6 @@ class MainWindow(QMainWindow):
         self.playing_reproductor = True
         self.nexted_song = False
         self.inicializarUI()
-        self.selected_item_index = self.songs_list.currentRow()
-        #self.songs_list.itemDoubleClicked.connect(self.handle_song_selection) 
         
     def inicializarUI(self):
         self.setGeometry(250,30,800,350)
@@ -179,7 +177,8 @@ class MainWindow(QMainWindow):
             self.playing_reproductor = True
     
     def next_song(self):
-        selected_item_index = self.get_current_playing_index()
+        #self.get_current_playing_index()
+        selected_item_index = ""#self.get_current_playing_index()
         print(selected_item_index)
         if self.songs_list.count() > 0:
             self.next_index = selected_item_index+1
@@ -195,12 +194,19 @@ class MainWindow(QMainWindow):
             self.player.setSource(source)
             self.player.play()  
         else:
-            print("No hay canciones en la lista")   
+            posision = self.player.position()
+            curren_index = self.songs_list.currentIndex()
+            print("No hay canciones en la lista",posision,curren_index)   
                    
     def get_current_playing_index(self):
-        current_media_url = self.player.source().path()
-        current_song_path = QUrl(current_media_url).toLocalFile()
-
+        #current_media_url = self.player.source().path()
+        #print(current_media_url)
+        #current_song_path = QUrl(current_media_url).toLocalFile()
+        #print(current_song_path)
+        selected_item = self.songs_list.currentItem()
+        song_name = selected_item.data(0)
+        song_folder_path = os.path.join(self.current_music_folder, song_name)
+        current_song_path = QUrl.fromLocalFile(song_folder_path)
         for index in range(self.songs_list.count()):
             item = self.songs_list.item(index)
             song_path = os.path.join(self.current_music_folder, item.text())

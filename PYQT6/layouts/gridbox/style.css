@@ -1,0 +1,30 @@
+MainWindow{
+    background-color: darkgrey;
+}
+
+QTextEdit{
+    background-color: rgba(0, 0, 0, 0);
+    color: black;
+    border-radius: 50px;
+    font-weight: bold;
+}
+QTextEdit#pantalla{
+    border-bottom: 20px;
+}
+QPushButton{
+    background-color: rgba(255, 255, 255, 0.774);
+    border-bottom-style: 20px;
+    padding: 9;
+    color: black;
+    font-weight: bold;
+    border-color: aqua;
+}
+
+QPushButton#boton_igual{
+    background-color: rgb(15, 58, 197);
+    border-bottom-style: 20px;
+    padding: 9;
+    color: black;
+    font-weight: bold;
+    border-color: aqua;
+}

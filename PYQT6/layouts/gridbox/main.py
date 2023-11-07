@@ -1,7 +1,8 @@
 import sys
 import typing
-from PyQt6 import QtCore
+from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import (QApplication, QWidget, QTextEdit, QPushButton, QGridLayout)
+from PyQt6.QtGui import QKeySequence
 import operator
 
 operation = {
@@ -22,6 +23,10 @@ class MainWindow(QWidget):
         self.bandera = '1'
         self.after_equal = False
         self.after_operador = False
+        with open("layouts/gridbox/style.css", "r") as file:
+            style = file.read()
+        
+        self.setStyleSheet(style)
 
     def inicializarUI(self):
         self.setGeometry(100,100,600,400)
@@ -31,6 +36,7 @@ class MainWindow(QWidget):
     
     def generar_interfaz(self):
         self.pantalla = QTextEdit()
+        self.pantalla.setObjectName("pantalla")
         self.pantalla.setDisabled(True)
         boton_1 = QPushButton("1")
         boton_2 = QPushButton("2")
@@ -46,22 +52,37 @@ class MainWindow(QWidget):
         boton_punto = QPushButton(".")
 
         boton_1.clicked.connect(self.ingresar_datos)
+        boton_1.setShortcut(QKeySequence(Qt.Key.Key_1))
         boton_2.clicked.connect(self.ingresar_datos)
+        boton_2.setShortcut(QKeySequence(Qt.Key.Key_2))
         boton_3.clicked.connect(self.ingresar_datos)
+        boton_3.setShortcut(QKeySequence(Qt.Key.Key_3))
         boton_4.clicked.connect(self.ingresar_datos)
+        boton_4.setShortcut(QKeySequence(Qt.Key.Key_4))
         boton_5.clicked.connect(self.ingresar_datos)
+        boton_5.setShortcut(QKeySequence(Qt.Key.Key_5))
         boton_6.clicked.connect(self.ingresar_datos)
+        boton_6.setShortcut(QKeySequence(Qt.Key.Key_6))
         boton_7.clicked.connect(self.ingresar_datos)
+        boton_7.setShortcut(QKeySequence(Qt.Key.Key_7))
         boton_8.clicked.connect(self.ingresar_datos)
+        boton_8.setShortcut(QKeySequence(Qt.Key.Key_8))
         boton_9.clicked.connect(self.ingresar_datos)
+        boton_9.setShortcut(QKeySequence(Qt.Key.Key_9))
         boton_0.clicked.connect(self.ingresar_datos)
+        boton_0.setShortcut(QKeySequence(Qt.Key.Key_0))
         boton_00.clicked.connect(self.ingresar_datos)
         boton_punto.clicked.connect(self.ingresar_datos)
+        boton_punto.setShortcut(QKeySequence('.'))
 
         boton_suma = QPushButton("+")
+        boton_suma.setShortcut(QKeySequence('+'))
         boton_resta = QPushButton("-")
+        boton_resta.setShortcut(QKeySequence('-'))
         boton_multiplicacion = QPushButton("*")
+        boton_multiplicacion.setShortcut(QKeySequence('*'))
         boton_division = QPushButton("/")
+        boton_division.setShortcut(QKeySequence(Qt.Key.Key_Slash))
 
         boton_suma.clicked.connect(self.insertar_operador)
         boton_resta.clicked.connect(self.insertar_operador)
@@ -69,8 +90,12 @@ class MainWindow(QWidget):
         boton_division.clicked.connect(self.insertar_operador)
 
         boton_igual = QPushButton("=")
+        boton_igual.setObjectName("boton_igual")
+        boton_igual.setShortcut(QKeySequence(Qt.Key.Key_Return))
         boton_ce = QPushButton("CE")
+        boton_ce.setShortcut(QKeySequence(Qt.Key.Key_Delete))
         boton_borrar = QPushButton("<-")
+        boton_borrar.setShortcut(QKeySequence(Qt.Key.Key_Backspace))
 
         boton_igual.clicked.connect(self.calcular_operacion)
         boton_ce.clicked.connect(self.borrar_todo)
@@ -154,13 +179,15 @@ class MainWindow(QWidget):
             self.pantalla.setText(self.segundo_valor)    
 
     def calcular_operacion(self):
-        resultado = str(operation[self.operador](float(self.primer_valor),float(self.segundo_valor)))
-        self.pantalla.setText(resultado)
-        self.primer_valor = resultado
-        self.segundo_valor = ''
-        self.after_equal = True
-        self.after_operador = False
-
+        if (self.primer_valor != "" and self.segundo_valor != ""):
+            resultado = str(operation[self.operador](float(self.primer_valor),float(self.segundo_valor)))
+            self.pantalla.setText(resultado)
+            self.primer_valor = resultado
+            self.segundo_valor = ''
+            self.after_equal = True
+            self.after_operador = False
+        
+        
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     window = MainWindow()
