@@ -8,7 +8,7 @@ if defined _OLD_CODEPAGE (
     "%SystemRoot%\System32\chcp.com" 65001 > nul
 )
 
-set VIRTUAL_ENV=C:\Users\sberrio81\OneDrive - Cementos Argos S.A\Escritorio\CursoPython\CursoPython\PYQT6\Qtenv
+set VIRTUAL_ENV=C:\Users\SEBASTIANBERRIOCHAVA\Desktop\CursoPython_\CursoPython\PYQT6\Qtenv
 
 if not defined PROMPT set PROMPT=$P$G
 
