@@ -1,10 +1,11 @@
 import sys
 import os
-from PyQt6.QtWidgets import (QApplication,QStatusBar,QLabel,QStatusBar, QMainWindow, QPushButton,
+from PyQt6.QtWidgets import (QApplication,QStatusBar,QLabel, QMainWindow, QPushButton,
                              QDockWidget,QTabWidget,QWidget,QHBoxLayout,QVBoxLayout,
-                             QListWidget,QFileDialog,QListWidgetItem)
+                             QListWidget,QFileDialog,QListWidgetItem, QSlider)
+import PyQt6.QtWidgets as qt
 from PyQt6.QtMultimedia import (QMediaPlayer, QAudioOutput)
-from PyQt6.QtCore import (Qt, QStandardPaths,QUrl,QModelIndex)
+from PyQt6.QtCore import (Qt, QStandardPaths,QUrl)
 from PyQt6.QtGui import (QPixmap, QAction, QKeySequence,QIcon)
 
 
@@ -20,6 +21,9 @@ class MainWindow(QMainWindow):
         self.setStyleSheet(style)
         self.player = QMediaPlayer()
         self.playing_reproductor = False
+        self.total_time_label = QLabel("0:00")
+        self.current_time_label = QLabel("0:00")
+        
         self.inicializarUI()
         
     def inicializarUI(self):
@@ -31,12 +35,15 @@ class MainWindow(QMainWindow):
         self.create_action()
         self.create_menu()
         self.load_songs()
+        self.create_player()
+        self.setFixedSize(800, 695)
         self.show()
     
     def generateMainWindow(self):
         tab_bar = QTabWidget(self)
         self.reproductor_cointainer = QWidget()
         self.settings_cointainer = QWidget()
+        
         tab_bar.addTab(self.reproductor_cointainer, "Reproductor")
         tab_bar.addTab(self.settings_cointainer, "Configuraciones")
         
@@ -53,10 +60,15 @@ class MainWindow(QMainWindow):
     def generate_reproductor_tab(self):
         main_V_box = QVBoxLayout()
         button_h_box = QHBoxLayout()
+        time_h_box = QHBoxLayout()
+        song_h_name = QHBoxLayout()
         buttons_cointainer = QWidget()
+        time_line_cointainer = QWidget()
+        song_name = QWidget()
+        
         
         song_image = QLabel()
-        pixmap = QPixmap("Reproductor/images/song_image.png").scaled(512, 512)
+        pixmap = QPixmap("Reproductor/images/song_image.png").scaled(312,512)
         song_image.setPixmap(pixmap)
         song_image.setScaledContents(True)
         
@@ -65,12 +77,15 @@ class MainWindow(QMainWindow):
         self.button_before = QPushButton()
         self.button_before.setObjectName("button_before")
         self.button_before.clicked.connect(self.play_back_song)
+        self.button_before.setShortcut(QKeySequence(Qt.Key.Key_F9))
         self.button_play = QPushButton()
         self.button_play.setObjectName("button_play")
         self.button_play.clicked.connect(self.play_pause_song)
+        self.button_play.setShortcut(QKeySequence(Qt.Key.Key_F10))
         self.button_next = QPushButton()
         self.button_next.setObjectName("button_next")
         self.button_next.clicked.connect(self.play_next_song)
+        self.button_next.setShortcut(QKeySequence(Qt.Key.Key_F11))
         self.button_random = QPushButton()
         self.button_random.setObjectName("button_random")
         self.button_repeat.setFixedSize(40,40)
@@ -85,8 +100,29 @@ class MainWindow(QMainWindow):
         button_h_box.addWidget(self.button_next)
         button_h_box.addWidget(self.button_random)
         
+        self.time_line = QSlider()
+        self.time_line = QSlider(Qt.Orientation.Horizontal)
+        self.song_name_music  = QLabel("")
+        #self.song_name_music.setText(self.update_song_name)
+        self.song_name_music.setObjectName("song_name")
+        self.time_line.sliderMoved.connect(self.move_song)
+        self.time_line.setRange(0,0)
+        #self.time_line.setMaximumHeight(4)
+        #self.time_line.setMaximumWidth(20000)
+        self.total_time_label.setObjectName("total_time")
+        self.current_time_label.setObjectName("current_time")
+        song_h_name.addWidget(self.song_name_music)
+        song_h_name.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        time_h_box.addWidget(self.current_time_label)
+        time_h_box.addWidget(self.time_line)
+        time_h_box.addWidget(self.total_time_label)
+        
+        song_name.setLayout(song_h_name)
+        time_line_cointainer.setLayout(time_h_box)
         buttons_cointainer.setLayout(button_h_box)
         main_V_box.addWidget(song_image)
+        main_V_box.addWidget(song_name)
+        main_V_box.addWidget(time_line_cointainer)
         main_V_box.addWidget(buttons_cointainer)
         self.reproductor_cointainer.setLayout(main_V_box)
     
@@ -166,7 +202,18 @@ class MainWindow(QMainWindow):
         self.audioOuput.setVolume(1.0)
         self.playing_reproductor=True
         
+    def move_song(self, position):
+        self.player.setPosition(position)  
+        self.player.positionChanged.connect(self.update_song_slider)
+
+    def update_song_slider(self,position):
+        self.time_line.setValue(position)
+    
+    #def update_song_name(self):
+     #   self.song_name_music.setText(self.songs_list.currentItem().text())
+           
     #SLOT HANDLE
+    
     def play_pause_song(self):
         if self.playing_reproductor:
             self.button_play.setStyleSheet("image: url(Reproductor/images/pausa.png)")
@@ -189,10 +236,11 @@ class MainWindow(QMainWindow):
                 self.songs_list.setCurrentItem(next_item)
                 song_name = next_item.text()
                 song_folder_path = os.path.join(self.current_music_folder, song_name)
-                self.create_player()
                 source = QUrl.fromLocalFile(song_folder_path)
                 self.player.setSource(source)
-                self.player.play()  
+                self.create_player()
+                
+                #self.player.play()  
             else:
                 next_item = self.songs_list.item(0)
                 self.songs_list.setCurrentItem(next_item)
@@ -202,6 +250,8 @@ class MainWindow(QMainWindow):
                 source = QUrl.fromLocalFile(song_folder_path)
                 self.player.setSource(source)
                 self.player.play() 
+                #################  
+              
     def play_back_song(self):
         current_item = self.songs_list.currentItem()
     
@@ -240,8 +290,35 @@ class MainWindow(QMainWindow):
     def mediaStatusChange(self,status):
         print('Status: ',status)
         if status == QMediaPlayer.MediaStatus.LoadedMedia:
+            #self.player.durationChanged.connect(self.update_total_time)
+            self.player.positionChanged.connect(self.update_current_time)
+            self.move_song(self.player.position())
             self.player.play()
+            duration = self.player.duration()
+            duration_tem = duration
+            if duration >=0:
+                self.time_line.setRange(0, duration)
+                self.time_line.setRange(0, duration)
+               
+                print("Time song:", duration)
+                total_minutes = duration // 60000
+                total_seconds = (duration % 60000) // 1000
+                self.total_time_label.setText(f"{total_minutes}:{total_seconds:02}")
+                print("asi: ",self.total_time_label.text() , self.current_time_label.text())
+                
+        if status == QMediaPlayer.MediaStatus.EndOfMedia:
+            print("La que sigue: ",status)
+            self.player.positionChanged.disconnect(self.update_current_time)
+            self.play_next_song()
+            self.move_song(self.player.position())
             
+            
+      
+    def update_current_time(self, position):
+        current_minutes = position // 60000
+        current_seconds = (position % 60000) // 1000
+        self.current_time_label.setText(f"{current_minutes}:{current_seconds:02}")
+
             
     def handle_song_selection(self):
         self.playing_reproductor = True
@@ -252,6 +329,8 @@ class MainWindow(QMainWindow):
             self.create_player()
             source = QUrl.fromLocalFile(song_folder_path)
             self.player.setSource(source)
+            self.song_name_music.setText(selected_item.text())
+           
             
                                  
 if __name__ == '__main__':

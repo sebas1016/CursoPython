@@ -109,3 +109,19 @@ QMenuBar QMenu::item:selected {
 QMenuBar QMenu::item:pressed {
     background-color: gray;
 }
+
+QLabel#total_time{
+    color: white;
+    font-weight: bold;
+}
+
+QLabel#current_time{
+    color: white;
+    font-weight: bold;
+}
+
+QLabel#song_name{
+    color: white;
+    font-weight: bold;
+    text-align: center;
+}
